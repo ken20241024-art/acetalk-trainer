@@ -21,8 +21,8 @@ function App() {
   const [mode, setMode] = useState<AppMode>('presentation');
   const [email, setEmail] = useState('');
   const [level, setLevel] = useState<Level>('university');
-  const [presDuration, setPresDuration] = useState(2); // 初期値 2分
-  const [qaDuration, setQaDuration] = useState(2);   // 初期値 2分
+  const [presDuration, setPresDuration] = useState(2);
+  const [qaDuration, setQaDuration] = useState(2);
 
   // チャット機能用の状態
   const [inputText, setInputText] = useState('');
@@ -37,7 +37,7 @@ function App() {
     if (SpeechRecognition) {
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = true;
-      recognitionRef.current.lang = 'en-US'; // 英語の練習用ならen-US, 日本語ならja-JP
+      recognitionRef.current.lang = 'en-US'; 
       recognitionRef.current.interimResults = true;
 
       recognitionRef.current.onresult = (event: any) => {
@@ -65,7 +65,6 @@ function App() {
   };
 
   const startTraining = () => {
-    // 設定内容を反映した開始メッセージ
     const initialPrompt = `Training Mode: ${mode.toUpperCase()}
 Judge Level: ${level.toUpperCase()}
 Presentation Time: ${presDuration} min
@@ -82,7 +81,7 @@ Q&A Time: ${qaDuration} min
     setIsChatStarted(true);
   };
 
-  // ★ここを修正しました：AI（api/chat）へ通信する機能
+  // ★ここが以前と違います（デモ応答を削除し、本物のAIへ接続）
   const sendMessage = async () => {
     if (!inputText.trim()) return;
 
@@ -99,8 +98,8 @@ Q&A Time: ${qaDuration} min
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: newHistory, // 会話履歴を送る
-          config: {             // 現在の設定も送る
+          messages: newHistory,
+          config: {
             level,
             presDuration,
             qaDuration,
@@ -215,12 +214,12 @@ Q&A Time: ${qaDuration} min
               </div>
             </div>
 
-            {/* 5. ファイルアップロード (見た目のみ) */}
+            {/* 5. ファイルアップロード (今は見た目だけ) */}
             <div>
               <label className="flex items-center gap-2 text-sm font-bold text-slate-600 mb-3 uppercase tracking-wider"><Upload size={16} className="text-blue-500"/> プレゼン資料 (PDFのみ推奨)</label>
               <div className="border-3 border-dashed border-slate-200 rounded-2xl p-10 text-center hover:bg-blue-50/50 hover:border-blue-300 transition-all cursor-pointer group bg-slate-50/50">
                 <div className="bg-white w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-sm border border-slate-100"><Upload className="text-blue-500" size={28} /></div>
-                <p className="text-sm font-bold text-slate-700 mb-1">クリックまたはドラッグでアップロード</p>
+                <p className="text-sm font-bold text-slate-700 mb-1">※チャット接続テスト中（アップロード機能は次回実装します）</p>
               </div>
             </div>
 
