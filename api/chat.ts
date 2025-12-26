@@ -10,8 +10,11 @@ export default async function handler(req: Request) {
     const { messages, config } = await req.json();
     const apiKey = process.env.GOOGLE_API_KEY;
     
+    // 1. 鍵がない場合のチェック
     if (!apiKey) {
-      return new Response(JSON.stringify({ reply: "（設定エラー：VercelにAPIキーが登録されていません）" }), { status: 200 });
+      return new Response(JSON.stringify({ 
+        reply: "【原因：APIキーが読み込めていません】\nVercelのSettingsでキーを設定し、必ず「Redeploy」してください。" 
+      }), { status: 200 });
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -19,10 +22,9 @@ export default async function handler(req: Request) {
 
     const systemPrompt = `
       You are an intense and realistic role-play training AI.
-      Role: ${config.level === 'professor' ? 'Strict University Professor' : config.level === 'middle' ? 'Curious Junior High Student' : 'University Student'}
+      Role: ${config.level}
       Current Mode: ${config.mode}
-      Reply in Japanese unless the user speaks English.
-      Keep it short and conversational.
+      Reply in Japanese.
     `;
 
     const lastUserMessage = messages[messages.length - 1].text;
@@ -41,8 +43,13 @@ export default async function handler(req: Request) {
       headers: { 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: any) {
+    // ★ここが探偵ポイント！エラーの正体をそのまま画面に返します
     console.error(error);
-    return new Response(JSON.stringify({ reply: "（AI呼び出しエラーが発生しました）" }), { status: 200 });
+    const errorMsg = error.message || String(error);
+    
+    return new Response(JSON.stringify({ 
+      reply: `【エラー原因判明！】\nGoogleからの返答エラーです。\n\n詳細: ${errorMsg}` 
+    }), { status: 200 });
   }
 }
