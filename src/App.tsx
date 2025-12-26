@@ -1,5 +1,5 @@
 // src/App.tsx
-// AKITA Presentation Trainer - Vercel Edition (Final UI)
+// AKITA Presentation Trainer - Vercel Edition (Connected to Gemini)
 import { useState, useRef, useEffect } from 'react';
 import { Mic, Send, StopCircle, User, Bot, Upload, Settings, CheckCircle2, Clock, HelpCircle } from 'lucide-react';
 
@@ -37,7 +37,7 @@ function App() {
     if (SpeechRecognition) {
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = true;
-      recognitionRef.current.lang = 'en-US';
+      recognitionRef.current.lang = 'en-US'; // 英語の練習用ならen-US, 日本語ならja-JP
       recognitionRef.current.interimResults = true;
 
       recognitionRef.current.onresult = (event: any) => {
@@ -82,20 +82,58 @@ Q&A Time: ${qaDuration} min
     setIsChatStarted(true);
   };
 
+  // ★ここを修正しました：AI（api/chat）へ通信する機能
   const sendMessage = async () => {
     if (!inputText.trim()) return;
+
+    // 1. ユーザーのメッセージを表示
     const userMsg: Message = { id: Date.now(), text: inputText, sender: 'user' };
     const newHistory = [...messages, userMsg];
     setMessages(newHistory);
     setInputText('');
     setIsLoading(true);
 
-    // ★まだデモ応答です
-    setTimeout(() => {
-        const demoReply = "（これはデモ応答です。次にインターネットへ公開し、本物のAIを接続します。）";
-        setMessages([...newHistory, { id: Date.now() + 1, text: demoReply, sender: 'ai' }]);
-        setIsLoading(false);
-    }, 1000);
+    try {
+      // 2. Vercel上のAIサーバー(api/chat)にデータを送る
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: newHistory, // 会話履歴を送る
+          config: {             // 現在の設定も送る
+            level,
+            presDuration,
+            qaDuration,
+            mode
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json();
+
+      // 3. AIからの返事を受け取って表示
+      const aiMsg: Message = {
+        id: Date.now() + 1,
+        text: data.reply || "（エラー：AIからの応答がありませんでした）",
+        sender: 'ai'
+      };
+      setMessages([...newHistory, aiMsg]);
+
+    } catch (error) {
+      console.error("Error:", error);
+      const errorMsg: Message = {
+        id: Date.now() + 1,
+        text: "申し訳ありません。エラーが発生しました。インターネット接続を確認してください。",
+        sender: 'ai'
+      };
+      setMessages([...newHistory, errorMsg]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // --- 画面1: 設定画面 ---
@@ -153,12 +191,12 @@ Q&A Time: ${qaDuration} min
                 </div>
             </div>
 
-            {/* 4. 時間設定 (修正済み) */}
+            {/* 4. 時間設定 */}
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <label className="flex items-center gap-2 text-sm font-bold text-slate-600 mb-3 uppercase tracking-wider"><Clock size={16} className="text-blue-500"/> プレゼン時間</label>
                 <div className="flex bg-slate-100 p-1.5 rounded-xl">
-                  {[2, 4, 6].map((m) => ( // ★ここを修正しました
+                  {[2, 4, 6].map((m) => (
                     <button key={m} onClick={() => setPresDuration(m)} className={`flex-1 py-3 text-sm rounded-lg transition-all font-bold ${presDuration === m ? 'bg-white shadow-sm text-blue-700' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}>
                       {m}分
                     </button>
@@ -168,7 +206,7 @@ Q&A Time: ${qaDuration} min
               <div>
                 <label className="flex items-center gap-2 text-sm font-bold text-slate-600 mb-3 uppercase tracking-wider"><HelpCircle size={16} className="text-blue-500"/> Q&A時間</label>
                 <div className="flex bg-slate-100 p-1.5 rounded-xl">
-                  {[2, 3, 4].map((m) => ( // ★ここを修正しました
+                  {[2, 3, 4].map((m) => (
                     <button key={m} onClick={() => setQaDuration(m)} className={`flex-1 py-3 text-sm rounded-lg transition-all font-bold ${qaDuration === m ? 'bg-white shadow-sm text-blue-700' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}>
                       {m}分
                     </button>
