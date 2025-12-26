@@ -244,52 +244,5 @@ Q&A Time: ${qaDuration} min
             <div className="flex gap-3 text-xs text-slate-500 mt-1 font-medium uppercase tracking-wide">
                 <span className="bg-slate-100 px-2 py-1 rounded-md">Judge: {level}</span>
                 <span className="bg-slate-100 px-2 py-1 rounded-md">Pres: {presDuration}min</span>
-                <span className="bg-slate-100 px-2 py-1 rounded-md">Q&A: {qaDuration}min</span>
-            </div>
-          </div>
-        </div>
-        <button onClick={() => setIsChatStarted(false)} className="text-sm text-slate-500 hover:text-blue-600 flex items-center gap-2 font-bold bg-slate-100 px-4 py-2 rounded-xl transition-colors">
-          <Settings size={16} /> 設定に戻る
-        </button>
-      </header>
-
-      <div className="flex-1 w-full max-w-4xl bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
-        <div className="flex-1 overflow-y-auto p-8 space-y-8 h-[60vh]">
-          {messages.map((msg) => (
-            <div key={msg.id} className={`flex gap-5 ${msg.sender === 'user' ? 'flex-row-reverse' : ''}`}>
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm ${msg.sender === 'user' ? 'bg-slate-100' : 'bg-blue-600'}`}>
-                {msg.sender === 'user' ? <User size={24} className="text-slate-500"/> : <Bot size={24} className="text-white" />}
-              </div>
-              <div className={`p-5 rounded-3xl max-w-[80%] leading-relaxed text-[15px] ${msg.sender === 'user' ? 'bg-slate-100 text-slate-800 rounded-tr-none' : 'bg-blue-50 text-blue-900 rounded-tl-none'}`}>
-                <div className="font-bold mb-1 text-xs opacity-50 mb-2">{msg.sender === 'user' ? 'YOU' : `AI JUDGE (${level.toUpperCase()})`}</div>
-                {msg.text}
-              </div>
-            </div>
-          ))}
-          {isLoading && (
-            <div className="flex gap-5 animate-pulse">
-               <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center shadow-sm"><Bot size={24} className="text-white" /></div>
-               <div className="p-5 bg-blue-50 rounded-3xl rounded-tl-none text-blue-900 text-[15px] flex items-center gap-2 font-medium">
-                 <Clock size={16} className="animate-spin"/> Thinking...
-               </div>
-            </div>
-          )}
-        </div>
-
-        <div className="p-6 bg-slate-50 border-t border-slate-100">
-          <div className="flex gap-4">
-            <button onClick={toggleMic} className={`p-4 rounded-full transition-all shadow-sm ${isListening ? 'bg-red-500 text-white animate-pulse ring-4 ring-red-100' : 'bg-white text-slate-600 border-2 border-slate-200 hover:bg-slate-100 hover:border-slate-300'}`}>
-              {isListening ? <StopCircle size={24} /> : <Mic size={24} />}
-            </button>
-            <input type="text" value={inputText} onChange={(e) => setInputText(e.target.value)} placeholder="Type or speak here..." className="flex-1 p-4 rounded-full border-2 border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all bg-white shadow-sm text-lg font-medium" onKeyPress={(e) => e.key === 'Enter' && sendMessage()}/>
-            <button onClick={sendMessage} disabled={isLoading || !inputText} className="p-4 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg hover:scale-105 active:scale-95">
-              <Send size={24} />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default App;
+                <span className="bg-slate-100 px-2
+                
