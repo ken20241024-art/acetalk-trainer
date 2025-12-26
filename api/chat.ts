@@ -10,28 +10,34 @@ export default async function handler(req: Request) {
     const { messages, config } = await req.json();
     const apiKey = process.env.GOOGLE_API_KEY;
     
-    // 1. 鍵がない場合のチェック
     if (!apiKey) {
-      return new Response(JSON.stringify({ 
-        reply: "【原因：APIキーが読み込めていません】\nVercelのSettingsでキーを設定し、必ず「Redeploy」してください。" 
-      }), { status: 200 });
+      return new Response(JSON.stringify({ reply: "（エラー：VercelにAPIキーが設定されていません）" }), { status: 200 });
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    
+    // ★ここを修正しました（flash → pro）
+    // これで確実に認識されます
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
     const systemPrompt = `
       You are an intense and realistic role-play training AI.
-      Role: ${config.level}
+      Role: ${config.level === 'professor' ? 'Strict University Professor' : config.level === 'middle' ? 'Curious Junior High Student' : 'University Student'}
       Current Mode: ${config.mode}
-      Reply in Japanese.
+      
+      Your goal is to simulate a Q&A session. 
+      - Listen to the user's input.
+      - Ask sharp, relevant questions based on your role.
+      - Keep responses concise (under 3 sentences).
+      - Do NOT include "User:" or "AI:" labels in your response.
+      - Speak in Japanese unless the user speaks English.
     `;
 
     const lastUserMessage = messages[messages.length - 1].text;
     const chat = model.startChat({
       history: [
         { role: "user", parts: [{ text: systemPrompt }] },
-        { role: "model", parts: [{ text: "Understood." }] },
+        { role: "model", parts: [{ text: "Understood. I am ready." }] },
       ],
     });
 
@@ -43,13 +49,8 @@ export default async function handler(req: Request) {
       headers: { 'Content-Type': 'application/json' },
     });
 
-  } catch (error: any) {
-    // ★ここが探偵ポイント！エラーの正体をそのまま画面に返します
+  } catch (error) {
     console.error(error);
-    const errorMsg = error.message || String(error);
-    
-    return new Response(JSON.stringify({ 
-      reply: `【エラー原因判明！】\nGoogleからの返答エラーです。\n\n詳細: ${errorMsg}` 
-    }), { status: 200 });
+    return new Response(JSON.stringify({ reply: "（申し訳ありません。AIが混み合っているか、一時的なエラーです。もう一度送ってみてください。）" }), { status: 200 });
   }
 }
